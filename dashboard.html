@@ -3,11 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
+    <!-- Firebase SDKs -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyDxOrcaT9qv-O--Tiy-ONN4GfylnvZdm8o",
+        authDomain: "driver-database-2af43.firebaseapp.com",
+        projectId: "driver-database-2af43",
+        storageBucket: "driver-database-2af43.appspot.com",
+        messagingSenderId: "561087141635",
+        appId: "1:561087141635:web:68735a1df4eb222c457b36",
+        measurementId: "G-R84EXFQRQK"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth();
+      const db = getFirestore();
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loadDrivers();
+        } else {
+          window.location.href = "login.html";
+        }
+      });
+
+      function loadDrivers() {
+        const driversRef = collection(db, "drivers");
+        getDocs(driversRef).then((querySnapshot) => {
+          const table = document.getElementById('drivers-table').getElementsByTagName('tbody')[0];
+          table.innerHTML = "";
+          querySnapshot.forEach((doc) => {
+            const driver = doc.data();
+            const row = table.insertRow();
+            row.insertCell(0).innerText = driver.first_name + " " + driver.last_name;
+            row.insertCell(1).innerText = driver.phone_number;
+            row.insertCell(2).innerText = driver.added_by;
+          });
+        });
+      }
+
+      document.getElementById('search').addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        const driversRef = collection(db, "drivers");
+        const q = query(driversRef, where("first_name", "==", search));
+        getDocs(q).then((querySnapshot) => {
+          const table = document.getElementById('drivers-table').getElementsByTagName('tbody')[0];
+          table.innerHTML = "";
+          querySnapshot.forEach((doc) => {
+            const driver = doc.data();
+            const row = table.insertRow();
+            row.insertCell(0).innerText = driver.first_name + " " + driver.last_name;
+            row.insertCell(1).innerText = driver.phone_number;
+            row.insertCell(2).innerText = driver.added_by;
+          });
+        });
+      });
+    </script>
 </head>
 <body>
     <h1>Dashboard</h1>
     <input type="text" id="search" placeholder="Search driver">
-    <button onclick="searchDriver()">Search</button>
     <table id="drivers-table">
         <thead>
             <tr>
@@ -20,10 +82,5 @@
             <!-- Driver data will be inserted here -->
         </tbody>
     </table>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
-    <script src="config.js"></script>
-    <script src="dashboard.js"></script>
 </body>
 </html>
